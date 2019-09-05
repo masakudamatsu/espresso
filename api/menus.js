@@ -50,7 +50,7 @@ menusRouter.post('/', (req, res, next) => {
 });
 
 
-// Check if the requested row exists
+// Check if the requested menu exists
 menusRouter.param('menuId', (req, res, next, id) => {
   db.get(
     'SELECT * FROM Menu WHERE id = $id',
@@ -106,6 +106,9 @@ menusRouter.put('/:menuId', (req, res, next) => {
     }
   );
 });
+
+const menuItemsRouter = require('./menu-items.js');
+menusRouter.use('/:menuId/menu-items', menuItemsRouter);
 
 menusRouter.use('/:menuId', (req, res, next) => {
   db.get(
