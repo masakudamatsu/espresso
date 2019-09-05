@@ -15,4 +15,38 @@ menusRouter.get('/', (req, res, next) => {
   });
 });
 
+
+// POST request
+menusRouter.post('/', (req, res, next) => {
+  const newTitle = req.body.menu.title;
+  // Check the validity of request
+  if (!newTitle) {
+    return res.sendStatus(400);
+  }
+  // Insert a new row to the database
+  const sql = 'INSERT INTO Menu ' +
+              '(title) ' +
+              'VALUES ($title)';
+  const values = {
+    $title: newTitle
+  };
+  db.run(sql, values, function(err) { // Do not use the arrow function
+      if (err) {
+        next(err);
+      }
+      // Return the newly added row
+      db.get(
+        'SELECT * FROM Menu WHERE id = $id',
+        { $id: this.lastID }, // This is why we cannot use the arrow function
+        (err, row) => {
+          if (err) {
+            next(err);
+          }
+          res.status(201).json({menu: row});
+        }
+      );
+    }
+  );
+});
+
 module.exports = menusRouter;
