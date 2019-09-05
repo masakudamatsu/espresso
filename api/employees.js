@@ -140,4 +140,8 @@ employeesRouter.delete('/:employeeId', (req, res, next) => {
   );
 });
 
+// timesheets
+const timesheetsRouter = require('./timesheets.js');
+employeesRouter.use('/:employeeId/timesheets', timesheetsRouter);
+
 module.exports = employeesRouter;
