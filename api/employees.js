@@ -56,4 +56,27 @@ employeesRouter.post('/', (req, res, next) => {
   );
 });
 
+// Check if the requested row exists
+employeesRouter.param('employeeId', (req, res, next, id) => {
+  db.get(
+    'SELECT * FROM Employee WHERE id = $id',
+    { $id: id },
+    (err, row) => {
+      if (err) {
+        res.sendStatus(400);
+      } else if (!row) {
+        res.sendStatus(404);
+      } else {
+        req.employee = row; // To be used for GET request below
+        next();
+      }
+    }
+  );
+});
+
+// GET single row request
+employeesRouter.get('/:employeeId', (req, res, next) => {
+  res.status(200).json({employee: req.employee});
+});
+
 module.exports = employeesRouter;
