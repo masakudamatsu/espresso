@@ -63,4 +63,61 @@ menuItemsRouter.post('/', (req, res, next) => {
   );
 });
 
+menuItemsRouter.param('menuItemId', (req, res, next, id) => {
+  db.get(
+    'SELECT * FROM MenuItem WHERE id = $menuItemId',
+    { $menuItemId: id},
+    (err, menuItem) => {
+      if (err) {
+        res.sendStatus(400);
+      } else if (!menuItem) {
+        res.sendStatus(404);
+      } else {
+        req.menuItem = menuItem;
+        next();
+      }
+    }
+  );
+});
+
+// PUT request
+menuItemsRouter.put('/:menuItemId', (req, res, next) => {
+  const newName = req.body.menuItem.name;
+  const newDescription = req.body.menuItem.description;
+  const newInventory = req.body.menuItem.inventory;
+  const newPrice = req.body.menuItem.price;
+  const menuId = req.params.menuId;
+  const menuItemId = req.params.menuItemId;
+  // Check the validity of request
+  if (!newName || !newInventory || !newPrice) {
+    return res.sendStatus(400);
+  }
+  const sql = 'UPDATE MenuItem ' +
+              'SET name = $name, description = $description, inventory = $inventory, price = $price, menu_id = $menuId ' +
+              'WHERE id = $id';
+  const values = {
+    $name: newName,
+    $description: newDescription,
+    $inventory: newInventory,
+    $price: newPrice,
+    $menuId: menuId,
+    $id: menuItemId
+  };
+  db.run(sql, values, function(err) {
+    if (err) {
+      next(err);
+    } else {
+    // Return the updated row
+      db.get(
+        'SELECT * FROM MenuItem WHERE id = $id',
+        { $id: menuItemId },
+        (err, row) => {
+          if (err) next(err);
+          res.status(200).json({menuItem: row});
+        }
+      );
+    }
+  });
+});
+
 module.exports = menuItemsRouter;
