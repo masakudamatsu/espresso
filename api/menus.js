@@ -49,4 +49,28 @@ menusRouter.post('/', (req, res, next) => {
   );
 });
 
+
+// Check if the requested row exists
+menusRouter.param('menuId', (req, res, next, id) => {
+  db.get(
+    'SELECT * FROM Menu WHERE id = $id',
+    { $id: id },
+    (err, row) => {
+      if (err) {
+        res.sendStatus(400);
+      } else if (!row) {
+        res.sendStatus(404);
+      } else {
+        req.menu = row; // To be used for GET request below
+        next();
+      }
+    }
+  );
+});
+
+// GET single row request
+menusRouter.get('/:menuId', (req, res, next) => {
+  res.status(200).json({menu: req.menu});
+});
+
 module.exports = menusRouter;
