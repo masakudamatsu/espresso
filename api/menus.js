@@ -73,4 +73,38 @@ menusRouter.get('/:menuId', (req, res, next) => {
   res.status(200).json({menu: req.menu});
 });
 
+
+// PUT request
+menusRouter.put('/:menuId', (req, res, next) => {
+  // Check the validity of request
+  const newTitle = req.body.menu.title;
+  const menuId = req.params.menuId;
+  // Check the validity of request
+  if (!newTitle) {
+    return res.sendStatus(400);
+  }
+  db.run(
+    'UPDATE Menu SET title = $title WHERE id = $id',
+    {
+      $title: newTitle,
+      $id: menuId
+    },
+    function(err) {
+      if (err) {
+        next(err);
+      } else {
+      // Return the updated row
+        db.get(
+          'SELECT * FROM Menu WHERE id = $id',
+          { $id: menuId },
+          (err, row) => {
+            if (err) next(err);
+            res.status(200).json({menu: row});
+          }
+        );
+      }
+    }
+  );
+});
+
 module.exports = menusRouter;
